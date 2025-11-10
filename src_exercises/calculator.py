@@ -1,6 +1,6 @@
-# calculator.py
-def add(a, b):
+def somma(a, b):
     return a + b
 
-def subtract(a, b):
-    return a - b
+def moltiplica(a, b):
+    return a * b
+
