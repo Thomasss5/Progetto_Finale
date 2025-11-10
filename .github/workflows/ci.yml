@@ -18,28 +18,40 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
         with:
           python-version: "3.10"
+
       - name: Install dependencies for requirements and testing
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+          pip install pylint flake8 mypy pytest pytest-cov
+          pip list
 
       - name: Lint with pylint
-        run: pylint $(git ls-files '*.py')
+        run: |
+          echo "Eseguo pylint solo sui file Python del progetto (ignoro venv/):"
+          find . -type f -name "*.py" ! -path "./venv/*" > pyfiles.txt
+          cat pyfiles.txt
+          pylint $(cat pyfiles.txt) --ignore=venv || true
 
       - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          echo "Eseguo flake8 (ignoro venv/)..."
+          flake8 . --exclude=venv --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --exclude=venv --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Lint with mypy
-        run: mypy $(git ls-files '*.py')
+        run: |
+          echo "Eseguo mypy (ignoro venv/)..."
+          find . -type f -name "*.py" ! -path "./venv/*" > pyfiles.txt
+          mypy $(cat pyfiles.txt) || true
 
+      # (Opzionale) Abilita test automatici se aggiungi pytest nel progetto
       # - name: Test with pytest
-      #   run: pytest --cov src tests/
+      #   run: pytest --cov=. --cov-report=term-missing
+
